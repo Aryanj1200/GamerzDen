@@ -1,0 +1,80 @@
+{
+  "iteration": 1,
+  "date": "2026-07-13",
+  "testing_type": "frontend only (offline single-file app, LocalStorage verified via page.evaluate)",
+  "app_url": "{REACT_APP_BACKEND_URL}/GamerzDen_Manager_V8.html",
+  "scenarios_tested": 40,
+  "scenarios_passed": 40,
+  "scenarios_failed": 0,
+  "summary": "Completed the full remaining regression suite for GamerzDen Manager V8 across 6 Playwright batches: pricing previews (PS5 1/2/Extra controller, Steering flat rate), Custom Pass slot validation, End Session with Cash/Card/Due, Due Payments partial+full collection, full Combined Bill lifecycle (create tab -> add session -> end into tab -> Close & Bill -> single COMBINED history record), tab food/manual charge/discount/cancel-with-detach, pass sale + pass hour deduction (0.5h bucket), End Day retention of active sessions/open tabs/unpaid dues, Calculator (keypad, keyboard, history, divide-by-zero), Settings persistence + price snapshot immutability, Customers page aggregates/search/combined-bill prefill, receipt vendor-cost redaction, sequential GD- bill numbering, and pc-5 -> Steering Wheel migration. All 40 assertions passed after correcting 4 wrong test-side assertions (see notes). No blocking or functional defects found; only 3 low-priority polish/testability items.",
+  "results": [
+    {"name": "App load + sidebar 16 nav items + 8 dashboard stat tiles", "status": "pass", "details": "sidebar .nav-btn count = 16; all stat-* testids present", "priority": "high"},
+    {"name": "Dropdown option sets (slot / payment / controllers)", "status": "pass", "details": "slots 0.5..9,unlimited,daypass,nightpass,custompass; payments pending,Cash,UPI,Card,Split,Due; controllers 1,2,3", "priority": "medium"},
+    {"name": "Steering Wheel flat rate (default 200/hr)", "status": "pass", "details": "3h = Rs600, 6h = Rs1,200 in #pricePreview", "priority": "high"},
+    {"name": "PS5 controller pricing at 2h slot", "status": "pass", "details": "1 ctrl = Rs200, 2 ctrl = Rs360, Extra (value 3) = Rs560", "priority": "high"},
+    {"name": "Custom Pass slot: pass field appears, 'No active passes' option, start blocked", "status": "pass", "details": "#passLinkGroup visible; option text 'No active passes for this customer'; toast 'Pick an active pass to attach'", "priority": "high"},
+    {"name": "End Session with Cash", "status": "pass", "details": "history len 1, bill=120, cash=120, upi=0, card=0, dueAmount=0, billStatus=paid, billNumber=GD-1001; Dashboard Total Received = Rs120", "priority": "high"},
+    {"name": "End Session with Card", "status": "pass", "details": "PS5-1 1h bill=100 (ps5one rate), card=100, cash=0, upi=0, paymentMethod=Card, billStatus=paid", "priority": "high"},
+    {"name": "End Session with Due", "status": "pass", "details": "billStatus=due, dueAmount=120=bill; Total Received excluded it (Rs220 = 120 cash + 100 card), Total Due = Rs120; Due Payments shows DUE row, outstanding Rs120, count 1", "priority": "high"},
+    {"name": "Due Payments partial then full collection", "status": "pass", "details": "collect 60 -> status partial, collected 60; collect 60 -> status paid, collected 120; Dashboard Received rose 220 -> 340", "priority": "high"},
+    {"name": "Combined Bill: create tab, card renders", "status": "pass", "details": "tab-card-<id> visible after saveTab for 'Rahul'", "priority": "high"},
+    {"name": "Combined Bill: + Add Session prefills customer + tabId", "status": "pass", "details": "ssCustomer=Rahul, ssTabId preselected to tab id", "priority": "high"},
+    {"name": "Combined Bill: live session line + Close & Bill disabled", "status": "pass", "details": "card shows 'PC 1 · 1 Hour Rs120', Grand Total Rs120, tab-close button disabled=True", "priority": "high"},
+    {"name": "Combined Bill: ending attached session does not create standalone history", "status": "pass", "details": "gd_history length 0; tab.closedSessions=1, tab.sessions=0; toast routes to Billing", "priority": "high"},
+    {"name": "Combined Bill: Close & Bill enabled after all sessions ended", "status": "pass", "details": "Grand Total still Rs120, disabled=False", "priority": "high"},
+    {"name": "Combined Bill: Close & Bill -> single combined history record", "status": "pass", "details": "1 record: systemName='Combined Bill', isCombined=true, bill=120, paymentMethod=Cash, billStatus=paid, billNumber=GD-1001", "priority": "high"},
+    {"name": "Combined Bill: history shows COMBINED badge", "status": "pass", "details": "History row shows 'Rahul COMBINED / Combined Bill'", "priority": "medium"},
+    {"name": "Combined Bill: add food to tab", "status": "pass", "details": "Coca Cola x2 -> 'Coca Cola × 2 @ Rs40  Rs80', Grand Total Rs80", "priority": "high"},
+    {"name": "Combined Bill: manual charge via prompt", "status": "pass", "details": "manualCharges=[{label:'Deposit',amount:150}], Grand Total 230", "priority": "high"},
+    {"name": "Combined Bill: discount via prompt", "status": "pass", "details": "discount=50, subtotal 230, Discount − Rs50, Grand Total Rs180", "priority": "high"},
+    {"name": "Combined Bill: cancel with live session detaches sessions", "status": "pass", "details": "tab card removed from open list; gd_active session tabId=null; two confirms handled", "priority": "high"},
+    {"name": "Passes: sell new pass defaults + row + history + dashboard", "status": "pass", "details": "defaults Custom Pass/2999/30/60; row 'Amit | Custom Pass | Rs2,999 | 60h | 0.0h | 60.0h | 12 Sept 2026 | ACTIVE'; expiry delta = 30 days; history record systemName='Custom Pass Sold' bill=2999; Dashboard Billed & Received = Rs2,999", "priority": "high"},
+    {"name": "Custom Pass usage deducts hours, zero gaming charge", "status": "pass", "details": "Ravi pass usedHours=0.5 (30-min bucket), remaining 59.5h shown in table; history rec slot=custompass, usedPass=true, baseAmount=0, bill=0", "priority": "high"},
+    {"name": "End Day creates report and retains open state", "status": "pass", "details": "gd_reports 0 -> 1; after End Day: active sessions 2, open tabs 1, unpaid dues 1; UI shows PC 4 session, Karan tab, DueGuy due; Reports page has 1 report row", "priority": "high"},
+    {"name": "Calculator keypad + arithmetic + history", "status": "pass", "details": "20 keys; 5+3= -> display 8; history entry '5+3 = 8'; Copy Result no error", "priority": "medium"},
+    {"name": "Calculator keyboard input", "status": "pass", "details": "keydown 7,*,6,Enter -> display 42, history '7×6 = 42'", "priority": "medium"},
+    {"name": "Calculator divide by zero", "status": "pass", "details": "5 ÷ 0 = -> display 'Error' (not Infinity/NaN)", "priority": "medium"},
+    {"name": "Settings persistence across reload", "status": "pass", "details": "steering=250 saved; after reload input shows 250 and gd_settings.steering === 250", "priority": "high"},
+    {"name": "Session price snapshot immutability", "status": "pass", "details": "Steering 2h preview Rs500 at rate 250; after changing rate to 500, running session priceSnapshot.steering=250 and card still Rs500; new session preview Rs1,000", "priority": "high"},
+    {"name": "Customers page: listing, aggregates, search, combined-bill prefill", "status": "pass", "details": "FoodCust visits 1 / spent Rs320 / due Rs0; AggDue visits 1 / spent Rs0 / due Rs120; search 'Karan' filters to single row; Combined Bill button prefills tabCustomer", "priority": "high"},
+    {"name": "Food item with vendor cost created (partner PizzaPartner, 200/120)", "status": "pass", "details": "created via Food Menu > Partners tab then Items tab; gd_foodMenu entry price=200 partnerCost=120 partnerId set", "priority": "medium"},
+    {"name": "Receipt hides vendor cost / profit", "status": "pass", "details": "Bill viewer (#billViewerModal) HTML contains no 'partnerCost'/'vendorCost'/'profit' and no partner name; shows Test Pizza Rs200 only. Note Rs120 appears only as the PC hourly rate line (Rs120/hr), not the vendor cost", "priority": "high"},
+    {"name": "Bill numbering increments sequentially", "status": "pass", "details": "3 consecutive Cash bills -> ['GD-1003','GD-1002','GD-1001'] (history newest-first)", "priority": "medium"},
+    {"name": "Migration: legacy pc-5 'PC 5' PC -> 'Steering Wheel' STEERING", "status": "pass", "details": "after seeding legacy gd_systems and reload, gd_systems pc-5 = {name:'Steering Wheel', type:'STEERING'}", "priority": "high"}
+  ],
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Session History row (combined bill)", "issue": "Slot column renders 'combined Hour' for combined-bill records (slotLabel fallback concatenates unknown slot with 'Hour'). Should read 'Combined' or '—'.", "selector": "[data-testid^=\"history-row-\"]", "priority": "LOW"},
+      {"component": "Toast container", "issue": "Toasts render top-right over the page header action buttons (e.g. '+ Walk-in Session', 'Export CSV'), briefly covering them; clicks during a toast can be intercepted.", "selector": ".toast", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Dashboard / QR Orders", "issues": ["App footer states 'OFFLINE · LOCAL DATA' yet QR Orders/Recent Orders are fetched from a remote API, so 'Active Food Orders' tiles show data that survives a full localStorage wipe and can reference stale station names (e.g. 'PC 5' instead of 'Steering Wheel'). Cosmetic/consistency only."]}
+    ]
+  },
+  "testability_gaps": [
+    "Tab food modal (#tabFoodBody) qty +/- buttons have no data-testid (unlike session food modal which has food-inc-/food-dec-). Had to select by row text.",
+    "Session food modal has no explicit save/close testid; closed via closeModal('foodOrderModal')."
+  ],
+  "test_side_assertion_corrections": [
+    "End modal payment select testid is 'input-end-payment' (not 'input-payment' which belongs to the Start modal).",
+    "Money is rendered with thousands separators (Rs2,999), so numeric assertions must account for commas.",
+    "Dashboard Total Received correctly excludes Due bills and adds due collections (220 then 340) - earlier 320/440 expectations were wrong."
+  ],
+  "action_item_for_main_agent": "No functional fixes required. Optional polish: (1) fix slot label for combined bill history rows ('combined Hour'), (2) offset toast container so it does not overlap header buttons, (3) add data-testid to tab-food modal qty buttons.",
+  "critical_code_review_comments": [
+    "GamerzDen_Manager_V8.html is 5,375 lines (single file) - far above the 700-line guideline; consider splitting JS/CSS into modules for maintainability.",
+    "Native prompt()/confirm() are used for manual charge, discount, cancel bill, pass edit and End Day; consider in-app modals for consistency and testability.",
+    "renderBilling/renderCustomers/renderPasses rebuild full innerHTML on every tick; acceptable at this scale but will degrade with many tabs/sessions."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (no backend in scope)", "frontend": "100% (40/40 assertions)"},
+  "seed_data_creation": "All data created in browser localStorage during tests (customers Rahul/Neha/Karan/Amit/Ravi/SeqPC*/FoodCust/AggDue, passes, tabs, dues, Test Pizza + PizzaPartner). localStorage was cleared at the start of each batch; final state contains 3 Cash bills from the bill-numbering batch.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "retest_needed": false,
+  "test_credentials": "None required (no auth); /app/memory/test_credentials.md is a template with no credentials.",
+  "context_for_next_testing_agent": "All 17-point PRD Phase 1+2 scenarios listed in the review request are now covered and passing. Key selector notes: end-session payment = [data-testid=input-end-payment]; start-modal payment = [data-testid=input-payment]; price preview = #pricePreview; Steering Wheel internal id is 'pc-5'; tab close/cancel = tab-close-<id>/tab-cancel-<id>; partners are created from Food Menu > Partners tab using the shared [data-testid=btn-add-food] button; session food modal id = foodOrderModal, tab food modal = tabFoodModal. Register page.on('dialog', ...) before manual charge/discount/cancel/End Day.",
+  "rca_of_the_issue": "No product defects reproduced. The only initial test failures were caused by wrong selectors/assertions on the test side (start-modal vs end-modal payment select, currency comma formatting, and incorrect expected dashboard totals); after correction every scenario passed and was double-checked against raw localStorage keys (gd_history, gd_active, gd_tabs, gd_dues, gd_passes, gd_settings, gd_systems, gd_reports)."
+}
