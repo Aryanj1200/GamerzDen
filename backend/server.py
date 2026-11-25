@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -19,6 +20,23 @@ db = client[os.environ['DB_NAME']]
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+# Serve the actual GamerzDen pages from the frontend public folder.
+PUBLIC_DIR = ROOT_DIR.parent / "frontend" / "public"
+
+@app.get("/", include_in_schema=False)
+async def manager_home():
+    return FileResponse(PUBLIC_DIR / "GamerzDen_Manager_V8.html")
+
+@app.get("/manager", include_in_schema=False)
+@app.get("/GamerzDen_Manager_V8.html", include_in_schema=False)
+async def manager_page():
+    return FileResponse(PUBLIC_DIR / "GamerzDen_Manager_V8.html")
+
+@app.get("/menu", include_in_schema=False)
+@app.get("/menu.html", include_in_schema=False)
+async def customer_menu_page():
+    return FileResponse(PUBLIC_DIR / "menu.html")
 
 
 # ---------- Models ----------
